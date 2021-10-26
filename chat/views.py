@@ -1,5 +1,5 @@
 import os
-from chat.models import Chat
+from chat.models import Chat, Jobs,Qualified
 import speech_recognition as sr
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -40,22 +40,24 @@ def upload(request):
     os.remove(filename)
     chat_message = Chat(user=request.user, message=msg)
     if msg != '':
+
+        j = Jobs.objects.all()
+        msg=msg.lower()
+        m = msg.split()
+        for jo in j:
+            skill = jo.skill.lower()
+            s = skill.split(',')
+            ms = set(m)
+            sk = set(s)
+            if ms & sk:
+                q=Qualified(user =request.user,message=jo.user)
+                q.save()
         chat_message.save()
     return redirect('/')
 
 
-def post(request):
-    if request.method == "POST":
-        msg = request.POST.get('msgbox', None)
-        print('Our value = ', msg)
-        chat_message = Chat(user=request.user, message=msg)
-        if msg != '':
-            chat_message.save()
-        return JsonResponse({'msg': msg, 'user': chat_message.user.username})
-    else:
-        return HttpResponse('Request should be POST.')
 
 
 def messages(request):
-    chat = Chat.objects.all()
+    chat = Qualified.objects.all()
     return render(request, 'messages.html', {'chat': chat})
