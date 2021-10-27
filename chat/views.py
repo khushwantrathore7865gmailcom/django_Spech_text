@@ -1,5 +1,5 @@
 import os
-from chat.models import Chat, Jobs,Qualified
+from chat.models import Chat, Jobs, Qualified
 import speech_recognition as sr
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -42,7 +42,7 @@ def upload(request):
     if msg != '':
 
         j = Jobs.objects.all()
-        msg=msg.lower()
+        msg = msg.lower()
         m = msg.split()
         for jo in j:
             skill = jo.skill.lower()
@@ -50,14 +50,13 @@ def upload(request):
             ms = set(m)
             sk = set(s)
             if ms & sk:
-                q=Qualified(user =request.user,message=jo.user)
+                q = Qualified(user=request.user, message=jo.user)
                 q.save()
         chat_message.save()
     return redirect('/')
 
 
-
-
 def messages(request):
-    chat = Qualified.objects.all()
-    return render(request, 'messages.html', {'chat': chat})
+    user = request.user
+    chat = Qualified.objects.filter(user=user)
+    return render(request, 'messages.html', {'chat': chat, 'user': user})
